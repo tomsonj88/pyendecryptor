@@ -11,6 +11,7 @@ from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 import arg_parser
 from pathlib import Path
 
+
 class Command(ABC):
 
     @abstractmethod
@@ -71,14 +72,17 @@ class Szyfrator:
         encrypt = Encrypt(self)
         process = CryptographProcess(encrypt)
         #filename = filepath.name
-        new_file = Path(filepath.parent, filepath.name + ".enc")
-        with open(filepath, "r") as file:
-            content = file.read()
-        encrypted_content = process.make_process(content.encode("utf-8"))
-        with open(new_file, "wb") as file:
-            file.write(encrypted_content)
-        if not arg_parser.args.keep_originals:
-            filepath.unlink()
+        try:
+            new_file = Path(filepath.parent, filepath.name + ".enc")
+            with open(filepath, "r") as file:
+                content = file.read()
+            encrypted_content = process.make_process(content.encode("utf-8"))
+            with open(new_file, "wb") as file:
+                file.write(encrypted_content)
+            if not arg_parser.args.keep_originals:
+                filepath.unlink()
+        except FileNotFoundError:
+            print(f"File {filepath} not found")
 
 
 class CryptographProcess:
