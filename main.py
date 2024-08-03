@@ -71,7 +71,6 @@ class Szyfrator:
         """
         encrypt = Encrypt(self)
         process = CryptographProcess(encrypt)
-        #filename = filepath.name
         try:
             new_file = Path(filepath.parent, filepath.name + ".enc")
             with open(filepath, "r") as file:
@@ -83,6 +82,32 @@ class Szyfrator:
                 filepath.unlink()
         except FileNotFoundError:
             print(f"File {filepath} not found")
+
+    def decrypt_file(self, filepath: Path):
+        """
+        Function to decrypt file
+        1) open file
+        2) read content of file
+        3) decrypt content
+        4) save decrypted content to new file without .enc extension
+        5) remove original file
+        :param filepath:
+        :return:
+        """
+        decrypt = Decrypt(self)
+        process = CryptographProcess(decrypt)
+
+        try:
+            with open(filepath, "rb") as file:
+                content = file.read()
+            decrypted_content = process.make_process(content)
+            decrypted_file = Path(filepath.parent, filepath.name[:-4])
+            with open(decrypted_file, "wb") as file:
+                file.write(decrypted_content)
+            filepath.unlink()
+        except FileNotFoundError:
+            print(f"File {filepath} not found")
+
 
 
 class CryptographProcess:
@@ -114,3 +139,5 @@ b = process.make_process(a)
 print(b.decode('utf-8'))
 file_pth = Path("test.txt")
 print(cipher.encrypt_file(file_pth))
+file_pth = Path("test.txt.enc")
+print(cipher.decrypt_file(file_pth))
