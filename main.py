@@ -1,4 +1,7 @@
 import argparse
+import os
+
+from dotenv import load_dotenv
 
 from pathlib import Path
 from crypting import Encrypt, Decrypt, Encrypter, CryptographProcess
@@ -18,3 +21,4 @@ file_pth = Path("test.txt")
 print(encrypter.encrypt_file(file_pth))
 file_pth = Path("test.txt.enc")
 print(encrypter.decrypt_file(file_pth))
+

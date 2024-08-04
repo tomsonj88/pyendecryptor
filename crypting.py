@@ -1,14 +1,19 @@
 import base64
+import os
+import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+from dotenv import load_dotenv
+from getpass import getpass
 
 import arg_parser
-from argparse import ArgumentParser
+#from argparse import ArgumentParser
 
+load_dotenv()
 
 class Command(ABC):
 
@@ -42,11 +47,16 @@ class Encrypter:
         return fernet.encrypt(msg_to_encrypt)
 
     def decrypt(self, msg_to_decrypt):
-        fernet = self.make_fernet()
-        return fernet.decrypt(msg_to_decrypt)
+        try:
+            fernet = self.make_fernet()
+            return fernet.decrypt(msg_to_decrypt)
+        except InvalidToken:
+            print("Invalid password or salt. Decryption can't be done")
+            sys.exit()
 
-    @staticmethod
-    def _generate_key():
+    def _generate_key(self):
+        password = self.get_password()
+        salt = self.get_salt()
         kdf = PBKDF2HMAC(algorithm=hashes.SHA256(), length=32,
                          salt=salt.encode(), iterations=480000)
         key = base64.urlsafe_b64encode(kdf.derive(password.encode()))
@@ -106,6 +116,26 @@ class Encrypter:
         except FileNotFoundError:
             print(f"File {filepath} not found")
 
+    @staticmethod
+    def get_password(self):
+        password = None
+        if arg_parser.args.password:
+            while not password:
+                password = getpass("Enter password")
+            return password
+        else:
+            return os.getenv("PASSWORD")
+
+    @staticmethod
+    def get_salt(self):
+        salt = None
+        if arg_parser.args.salt:
+            while not salt:
+                salt = getpass("Enter salt")
+            return salt
+        else:
+            return os.getenv("SALT")
+
 
 class CryptographProcess:
     def __init__(self, command):
@@ -114,6 +144,7 @@ class CryptographProcess:
     def make_process(self, message):
         return self.command.execute(message)
 
+#password = os.getenv("PASSWORD")
+#salt = os.getenv("SALT")
 
-password = "my_password399"
-salt = "657"
+# ToDo make exception handling for KeyboardInterrupt

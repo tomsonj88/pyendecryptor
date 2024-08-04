@@ -1,5 +1,7 @@
 import argparse
 
+import crypting
+
 parser = argparse.ArgumentParser(prog="Pyendecryptor",
                                  description="Program for encrypt/decrypt "
                                              "message, file or directory"
@@ -24,10 +26,12 @@ data_group.add_argument("-msg",
                         )
 parser.add_argument("-p",
                     "--password",
+                    action='store_true',
                     help="Password for encryption/decryption"
                     )
 parser.add_argument("-s",
                     "--salt",
+                    action='store_true',
                     help="Salt for password"
                     )
 parser.add_argument("-ko",
