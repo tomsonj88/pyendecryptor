@@ -22,6 +22,10 @@ class Command(ABC):
         pass
 
 
+class NotEncryptedFileError(Exception):
+    pass
+
+
 class Encrypt(Command):
 
     def __init__(self, szyfrator):
@@ -81,9 +85,9 @@ class Encrypter:
         process = CryptographProcess(encrypt)
         try:
             new_file = Path(filepath.parent, filepath.name + ".enc")
-            with open(filepath, "r") as file:
+            with open(filepath, "rb") as file:
                 content = file.read()
-            encrypted_content = process.make_process(content.encode("utf-8"))
+            encrypted_content = process.make_process(content)
             with open(new_file, "wb") as file:
                 file.write(encrypted_content)
             if not arg_parser.args.keep_originals:
@@ -102,19 +106,24 @@ class Encrypter:
         :param filepath:
         :return:
         """
+        # ToDo check if file end with ".enc", then decryption can be done
         decrypt = Decrypt(self)
         process = CryptographProcess(decrypt)
-
+        file_name = filepath.name
         try:
+            if not file_name.endswith(".enc"):
+                raise NotEncryptedFileError(f"File {filepath} is not encrypted. Decryption can't be done.")
             with open(filepath, "rb") as file:
                 content = file.read()
-            decrypted_content = process.make_process(content)
+            decrypted_content = process.make_process(content.decode("utf-8"))
             decrypted_file = Path(filepath.parent, filepath.name[:-4])
             with open(decrypted_file, "wb") as file:
                 file.write(decrypted_content)
             filepath.unlink()
         except FileNotFoundError:
             print(f"File {filepath} not found")
+        except NotEncryptedFileError as e:
+            print(e)
 
     def encrypt_folder(self, folder_path: Path):
         """
@@ -131,6 +140,13 @@ class Encrypter:
                 self.encrypt_file(Path(element.path))
             else:
                 self.encrypt_folder(Path(element.path))
+
+    def decrypt_folder(self, folder_path: Path):
+        for element in os.scandir(folder_path):
+            if not element.is_dir():
+                self.decrypt_file(Path(element.path))
+            else:
+                self.decrypt_folder(Path(element.path))
 
     @staticmethod
     def get_password():
