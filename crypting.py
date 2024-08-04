@@ -116,8 +116,24 @@ class Encrypter:
         except FileNotFoundError:
             print(f"File {filepath} not found")
 
+    def encrypt_folder(self, folder_path: Path):
+        """
+        1) In for loop goes to every file in directory
+        2) Check if is file or directory
+        3) If is file, call encrypt_file
+        4) If is directory, call my own (encrypt_folder)
+        :param folder_path:
+        :return:
+        """
+
+        for element in os.scandir(folder_path):
+            if not element.is_dir():
+                self.encrypt_file(Path(element.path))
+            else:
+                self.encrypt_folder(Path(element.path))
+
     @staticmethod
-    def get_password(self):
+    def get_password():
         password = None
         if arg_parser.args.password:
             while not password:
@@ -127,7 +143,7 @@ class Encrypter:
             return os.getenv("PASSWORD")
 
     @staticmethod
-    def get_salt(self):
+    def get_salt():
         salt = None
         if arg_parser.args.salt:
             while not salt:
@@ -143,8 +159,5 @@ class CryptographProcess:
 
     def make_process(self, message):
         return self.command.execute(message)
-
-#password = os.getenv("PASSWORD")
-#salt = os.getenv("SALT")
 
 # ToDo make exception handling for KeyboardInterrupt
