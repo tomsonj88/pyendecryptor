@@ -158,6 +158,15 @@ class Encrypter:
         process = CryptographProcess(encrypt)
         return process.make_process(text.encode("utf-8"))
 
+    def decrypt_message(self, encrypted_text: bytes) -> str:
+        """
+        Method to decrypt message/text.
+        :param encrypted_text:
+        :return: str
+        """
+        decrypt = Decrypt(self)
+        process = CryptographProcess(decrypt)
+        return process.make_process(encrypted_text).decode("utf-8")
 
     @staticmethod
     def get_password():

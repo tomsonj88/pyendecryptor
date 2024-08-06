@@ -27,9 +27,6 @@ folder_path = Path("for_test")
 #encrypter.encrypt_folder(folder_path)
 #encrypter.decrypt_folder(folder_path)
 
-msg = encrypter.encrypt_message("abc")
-print(msg)
-
 # ToDo: add verbose in arg parse
 # ToDo: Implement encrypt/decrypt message
 # ToDo: integrate program with console arguments(argparse)
