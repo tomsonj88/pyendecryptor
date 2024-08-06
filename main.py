@@ -25,5 +25,19 @@ process = CryptographProcess(encrypt)
 # encrypter.encrypt_folder("for_test")
 folder_path = Path("for_test")
 #encrypter.encrypt_folder(folder_path)
-encrypter.decrypt_folder(folder_path)
+#encrypter.decrypt_folder(folder_path)
+
+msg = encrypter.encrypt_message("abc")
+print(msg)
+
+# ToDo: add verbose in arg parse
+# ToDo: Implement encrypt/decrypt message
+# ToDo: integrate program with console arguments(argparse)
+# ToDo: Add procedure to en/decrypt many files or folders
+# ToDo: add destination path as option to encryption process (en/decrypt folder, files to another location)
+# ToDo: 
+# ToDo: print done after finish script
+# ToDo: print encryption process time (with progress bar maybe)
+# ToDo: add encryption process to another thread
+# ToDo:
 

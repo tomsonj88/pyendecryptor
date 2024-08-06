@@ -148,6 +148,17 @@ class Encrypter:
             else:
                 self.decrypt_folder(Path(element.path))
 
+    def encrypt_message(self, text: str) -> bytes:
+        """
+        Method to encrypt message/text.
+        :param text:
+        :return: bytes
+        """
+        encrypt = Encrypt(self)
+        process = CryptographProcess(encrypt)
+        return process.make_process(text.encode("utf-8"))
+
+
     @staticmethod
     def get_password():
         password = None
