@@ -2,8 +2,9 @@ import argparse
 import os
 
 from dotenv import load_dotenv
-
 from pathlib import Path
+
+from arg_parser import args, parser
 from crypting import Encrypt, Decrypt, Encrypter, CryptographProcess
 
 
@@ -27,8 +28,28 @@ folder_path = Path("for_test")
 #encrypter.encrypt_folder(folder_path)
 #encrypter.decrypt_folder(folder_path)
 
+def main():
+    encrypter = Encrypter()
+
+    if args.mode == "encrypt":
+        if args.file:
+            encrypter.encrypt_file(Path(args.file))
+        elif args.dir:
+            encrypter.encrypt_folder(Path(args.dir))
+        elif args.message:
+            print(encrypter.encrypt_message(args.message))
+    elif args.mode == "decrypt":
+        if args.file:
+            encrypter.decrypt_file(Path(args.file))
+        elif args.dir:
+            encrypter.decrypt_folder(Path(args.dir))
+        elif args.message:
+            print(encrypter.decrypt_message(args.message))
+
+# TODO: check in encrypt_file if given path is a file (use os.path.isdir())
+#TODO: remove returning bytes after encryption, give result in string(add
+#       return process.make_process(text.encode("utf-8")).decode("utf-8") to encrypt_message) - check inf other methods
 # ToDo: add verbose in arg parse
-# ToDo: Implement encrypt/decrypt message
 # ToDo: integrate program with console arguments(argparse)
 # ToDo: Add procedure to en/decrypt many files or folders
 # ToDo: add destination path as option to encryption process (en/decrypt folder, files to another location)
@@ -36,5 +57,7 @@ folder_path = Path("for_test")
 # ToDo: print done after finish script
 # ToDo: print encryption process time (with progress bar maybe)
 # ToDo: add encryption process to another thread
-# ToDo:
+# # ToDo make exception handling for KeyboardInterrupt
 
+if __name__ == "__main__":
+    main()
