@@ -148,7 +148,7 @@ class Encrypter:
             else:
                 self.decrypt_folder(Path(element.path))
 
-    def encrypt_message(self, text: str) -> bytes:
+    def encrypt_message(self, text: str) -> str:
         """
         Method to encrypt message/text.
         :param text:
@@ -156,7 +156,7 @@ class Encrypter:
         """
         encrypt = Encrypt(self)
         process = CryptographProcess(encrypt)
-        return process.make_process(text.encode("utf-8"))
+        return process.make_process(text.encode("utf-8")).decode("utf-8")
 
     def decrypt_message(self, encrypted_text: bytes) -> str:
         """
