@@ -46,6 +46,7 @@ def main():
         elif args.message:
             print(encrypter.decrypt_message(args.message))
 
+
 # TODO: check in encrypt_file if given path is a file (use os.path.isdir())
 #TODO: remove returning bytes after encryption, give result in string(add
 #       return process.make_process(text.encode("utf-8")).decode("utf-8") to encrypt_message) - check inf other methods

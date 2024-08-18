@@ -25,6 +25,9 @@ class Command(ABC):
 class NotEncryptedFileError(Exception):
     pass
 
+class NotAFileError(Exception):
+    pass
+
 
 class Encrypt(Command):
 
@@ -84,6 +87,7 @@ class Encrypter:
         encrypt = Encrypt(self)
         process = CryptographProcess(encrypt)
         try:
+            self.check_path_is_file(filepath)
             new_file = Path(filepath.parent, filepath.name + ".enc")
             with open(filepath, "rb") as file:
                 content = file.read()
@@ -94,6 +98,8 @@ class Encrypter:
                 filepath.unlink()
         except FileNotFoundError:
             print(f"File {filepath} not found")
+        except NotAFileError as exception:
+            print(exception)
 
     def decrypt_file(self, filepath: Path):
         """
@@ -111,6 +117,7 @@ class Encrypter:
         process = CryptographProcess(decrypt)
         file_name = filepath.name
         try:
+            self.check_path_is_file(filepath)
             if not file_name.endswith(".enc"):
                 raise NotEncryptedFileError(f"File {filepath} is not encrypted. Decryption can't be done.")
             with open(filepath, "rb") as file:
@@ -124,6 +131,8 @@ class Encrypter:
             print(f"File {filepath} not found")
         except NotEncryptedFileError as e:
             print(e)
+        except NotAFileError as exception:
+            print(exception)
 
     def encrypt_folder(self, folder_path: Path):
         """
@@ -134,19 +143,26 @@ class Encrypter:
         :param folder_path:
         :return:
         """
-
-        for element in os.scandir(folder_path):
-            if not element.is_dir():
-                self.encrypt_file(Path(element.path))
-            else:
-                self.encrypt_folder(Path(element.path))
+        try:
+            self.check_path_is_directory(folder_path)
+            for element in os.scandir(folder_path):
+                if not element.is_dir():
+                    self.encrypt_file(Path(element.path))
+                else:
+                    self.encrypt_folder(Path(element.path))
+        except NotADirectoryError as exception:
+            print(exception)
 
     def decrypt_folder(self, folder_path: Path):
-        for element in os.scandir(folder_path):
-            if not element.is_dir():
-                self.decrypt_file(Path(element.path))
-            else:
-                self.decrypt_folder(Path(element.path))
+        try:
+            self.check_path_is_directory(folder_path)
+            for element in os.scandir(folder_path):
+                if not element.is_dir():
+                    self.decrypt_file(Path(element.path))
+                else:
+                    self.decrypt_folder(Path(element.path))
+        except NotADirectoryError as exception:
+            print(exception)
 
     def encrypt_message(self, text: str) -> str:
         """
@@ -187,6 +203,16 @@ class Encrypter:
             return salt
         else:
             return os.getenv("SALT")
+
+    @staticmethod
+    def check_path_is_directory(path: Path):
+        if not os.path.isdir(path):
+            raise NotADirectoryError("Given location is not a directory")
+
+    @staticmethod
+    def check_path_is_file(path: Path):
+        if not os.path.isfile(path):
+            raise NotAFileError("Given location is not a file")
 
 
 class CryptographProcess:
