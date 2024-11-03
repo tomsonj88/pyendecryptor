@@ -207,12 +207,12 @@ class Encrypter:
     @staticmethod
     def check_path_is_directory(path: Path):
         if not os.path.isdir(path):
-            raise NotADirectoryError("Given location is not a directory")
+            raise NotADirectoryError("Given location is not a directory or directory doesn't exist")
 
     @staticmethod
     def check_path_is_file(path: Path):
         if not os.path.isfile(path):
-            raise NotAFileError("Given location is not a file")
+            raise NotAFileError("Given location is not a file or file doesn't exist")
 
 
 class CryptographProcess:
