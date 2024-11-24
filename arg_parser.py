@@ -15,11 +15,13 @@ parser.add_argument("-m",
                     )
 data_group = parser.add_mutually_exclusive_group()
 data_group.add_argument("-f",
-                        "--file"
+                        "--file",
+                        action="append"
                         )
 data_group.add_argument("-d",
                         "--dir",
-                        help="Directory to encrypt/decrypt"
+                        help="Directory to encrypt/decrypt",
+                        action="append"
                         )
 data_group.add_argument("-msg",
                         "--message"
@@ -39,11 +41,11 @@ parser.add_argument("-ko",
                     help="Remove original file/folder after "
                          "encryption/decryption"
                     )
-# parser.add_argument("-v",
-#                     "--verbose",
-#                     count=True,
-#                     default=0,
-#                     help="Verbose mode"
-#                     )
+parser.add_argument("-v",
+                    "--verbose",
+                    action="count",
+                    default=0,
+                    help="Verbose mode"
+                    )
 
 args = parser.parse_args()

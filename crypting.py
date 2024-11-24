@@ -134,6 +134,14 @@ class Encrypter:
         except NotAFileError as exception:
             print(exception)
 
+    def encrypt_files(self, files: list):
+        for file in files:
+            self.encrypt_file(Path(file))
+
+    def decrypt_files(self, files: list):
+        for file in files:
+            self.decrypt_file(Path(file))
+
     def encrypt_folder(self, folder_path: Path):
         """
         1) In for loop goes to every file in directory
@@ -163,6 +171,14 @@ class Encrypter:
                     self.decrypt_folder(Path(element.path))
         except NotADirectoryError as exception:
             print(exception)
+
+    def encrypt_folders(self, folders: list):
+        for folder in folders:
+            self.encrypt_folder(Path(folder))
+
+    def decrypt_folders(self, folders: list):
+        for folder in folders:
+            self.decrypt_folder(Path(folder))
 
     def encrypt_message(self, text: str) -> str:
         """
