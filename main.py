@@ -34,22 +34,22 @@ def main():
     if args.mode == "encrypt":
         if args.file:
             # encrypter.encrypt_file(Path(args.file))
-            encrypter.encrypt_files(args.file)
+            encrypter.encrypt_files(args.file, args.dest_path)
         elif args.dir:
             encrypter.encrypt_folders(args.dir)
         elif args.message:
             print(encrypter.encrypt_message(args.message))
     elif args.mode == "decrypt":
         if args.file:
-            encrypter.decrypt_files(args.file)
+            encrypter.decrypt_files(args.file, args.dest_path)
         elif args.dir:
             encrypter.decrypt_folders(args.dir)
         elif args.message:
             print(encrypter.decrypt_message(args.message))
     print("Script execution done")
 
-    # encrypter.encrypt_files([Path(r".\for_test\direct.txt")])
-    #encrypter.decrypt_file(Path(r".\for_test\direct.txt.enc"))
+    #encrypter.encrypt_files([r".\for_test\totally_new\direct.txt"], r".\just_created")
+    #encrypter.decrypt_file(Path(r".\just_created\direct.txt.enc"), r".\for_test\totally_new")
 
 if __name__ == "__main__":
     main()

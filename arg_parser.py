@@ -41,6 +41,11 @@ parser.add_argument("-ko",
                     help="Remove original file/folder after "
                          "encryption/decryption"
                     )
+parser.add_argument("-dp",
+                    "--dest_path",
+                    help="Create en/decryption results for files or folders in given path"
+                    )
+
 parser.add_argument("-v",
                     "--verbose",
                     action="count",

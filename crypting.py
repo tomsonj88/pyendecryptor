@@ -11,9 +11,11 @@ from dotenv import load_dotenv
 from getpass import getpass
 
 import arg_parser
+
 #from argparse import ArgumentParser
 
 load_dotenv()
+
 
 class Command(ABC):
 
@@ -24,6 +26,7 @@ class Command(ABC):
 
 class NotEncryptedFileError(Exception):
     pass
+
 
 class NotAFileError(Exception):
     pass
@@ -73,7 +76,7 @@ class Encrypter:
         key = self._generate_key()
         return Fernet(key)
 
-    def encrypt_file(self, filepath: Path):
+    def encrypt_file(self, filepath: Path, destination_path: Path = None):
         """
         Function to encrypt file
         1) open file
@@ -88,11 +91,16 @@ class Encrypter:
         process = CryptographProcess(encrypt)
         try:
             self.check_path_is_file(filepath)
-            new_file = Path(filepath.parent, filepath.name + ".enc")
+            if destination_path:
+                if not self.is_path_exist(destination_path):
+                    self.create_path(destination_path)
+                new_file = Path(destination_path, filepath.name + ".enc")
+            else:
+                new_file = Path(filepath.parent, filepath.name + ".enc")
             with open(filepath, "rb") as file:
                 content = file.read()
             encrypted_content = process.make_process(content)
-            with open(new_file, "wb") as file:
+            with open(new_file, "wb") as file: #ToDo: jak wbyeirasz destination_path nowa/nieistniejace to wywala bląd  FileNotFoundError
                 file.write(encrypted_content)
             if not arg_parser.args.keep_originals:
                 filepath.unlink()
@@ -101,7 +109,7 @@ class Encrypter:
         except NotAFileError as exception:
             print(exception)
 
-    def decrypt_file(self, filepath: Path):
+    def decrypt_file(self, filepath: Path, destination_path: Path = None):
         """
         Function to decrypt file
         1) open file
@@ -115,15 +123,23 @@ class Encrypter:
         # ToDo check if file end with ".enc", then decryption can be done
         decrypt = Decrypt(self)
         process = CryptographProcess(decrypt)
-        file_name = filepath.name
+        #file_name = filepath.name
         try:
             self.check_path_is_file(filepath)
-            if not file_name.endswith(".enc"):
-                raise NotEncryptedFileError(f"File {filepath} is not encrypted. Decryption can't be done.")
+            if not filepath.name.endswith(".enc"):  # ToDo: zlikwidować file_name raczej
+                raise NotEncryptedFileError(
+                    f"File {filepath} is not encrypted. Decryption can't be done.")
+
+            if destination_path:
+                if not self.is_path_exist(destination_path):
+                    self.create_path(destination_path)
+                decrypted_file = Path(destination_path, filepath.name[:-4])
+            else:
+                decrypted_file = Path(filepath.parent, filepath.name[:-4])
+
             with open(filepath, "rb") as file:
                 content = file.read()
             decrypted_content = process.make_process(content.decode("utf-8"))
-            decrypted_file = Path(filepath.parent, filepath.name[:-4])
             with open(decrypted_file, "wb") as file:
                 file.write(decrypted_content)
             filepath.unlink()
@@ -134,13 +150,13 @@ class Encrypter:
         except NotAFileError as exception:
             print(exception)
 
-    def encrypt_files(self, files: list):
+    def encrypt_files(self, files: list, destination_path: Path = None):
         for file in files:
-            self.encrypt_file(Path(file))
+            self.encrypt_file(Path(file), destination_path)
 
-    def decrypt_files(self, files: list):
+    def decrypt_files(self, files: list, destination_path: Path = None):
         for file in files:
-            self.decrypt_file(Path(file))
+            self.decrypt_file(Path(file), destination_path)
 
     def encrypt_folder(self, folder_path: Path):
         """
@@ -223,12 +239,20 @@ class Encrypter:
     @staticmethod
     def check_path_is_directory(path: Path):
         if not os.path.isdir(path):
-            raise NotADirectoryError("Given location is not a directory or directory doesn't exist")
+            raise NotADirectoryError(
+                "Given location is not a directory or directory doesn't exist")
 
     @staticmethod
     def check_path_is_file(path: Path):
         if not os.path.isfile(path):
-            raise NotAFileError("Given location is not a file or file doesn't exist")
+            raise NotAFileError(
+                "Given location is not a file or file doesn't exist")
+
+    def is_path_exist(self, path) -> bool:
+        return os.path.exists(path)
+
+    def create_path(self, path):
+        os.mkdir(path)
 
 
 class CryptographProcess:
