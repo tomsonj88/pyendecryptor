@@ -1,5 +1,6 @@
 import base64
 import os
+import re
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -84,6 +85,7 @@ class Encrypter:
         3) encrypt content
         4) save encrypted content to new file with .enc extension
         5) remove original file if -ko flag is set to False
+        :param destination_path:
         :param filepath: Path
         :return:
         """
@@ -104,6 +106,8 @@ class Encrypter:
                 file.write(encrypted_content)
             if not arg_parser.args.keep_originals:
                 filepath.unlink()
+                self.remove_dir_if_is_empty(filepath.parent) # todo: add to more functions
+
         except FileNotFoundError:
             print(f"File {filepath} not found")
         except NotAFileError as exception:
@@ -117,6 +121,7 @@ class Encrypter:
         3) decrypt content
         4) save decrypted content to new file without .enc extension
         5) remove original file
+        :param destination_path:
         :param filepath:
         :return:
         """
@@ -142,7 +147,9 @@ class Encrypter:
             decrypted_content = process.make_process(content.decode("utf-8"))
             with open(decrypted_file, "wb") as file:
                 file.write(decrypted_content)
-            filepath.unlink()
+            if not arg_parser.args.keep_originals:
+                filepath.unlink()
+                self.remove_dir_if_is_empty(filepath.parent) # todo: add to more functions
         except FileNotFoundError:
             print(f"File {filepath} not found")
         except NotEncryptedFileError as e:
@@ -158,7 +165,7 @@ class Encrypter:
         for file in files:
             self.decrypt_file(Path(file), destination_path)
 
-    def encrypt_folder(self, folder_path: Path):
+    def encrypt_folder(self, folder_path: Path, destination_path: Path = None): # TODO: add dest path
         """
         1) In for loop goes to every file in directory
         2) Check if is file or directory
@@ -169,32 +176,38 @@ class Encrypter:
         """
         try:
             self.check_path_is_directory(folder_path)
+            if destination_path:
+                if not self.is_path_exist(destination_path):
+                    self.create_path(destination_path)
             for element in os.scandir(folder_path):
                 if not element.is_dir():
-                    self.encrypt_file(Path(element.path))
+                    self.encrypt_file(Path(element.path), destination_path)
                 else:
-                    self.encrypt_folder(Path(element.path))
+                    self.encrypt_folder(Path(element.path), destination_path)
         except NotADirectoryError as exception:
             print(exception)
 
-    def decrypt_folder(self, folder_path: Path):
+    def decrypt_folder(self, folder_path: Path, destination_path: Path = None): # TODO: add dest path
         try:
             self.check_path_is_directory(folder_path)
+            if destination_path:
+                if not self.is_path_exist(destination_path):
+                    self.create_path(destination_path)
             for element in os.scandir(folder_path):
                 if not element.is_dir():
-                    self.decrypt_file(Path(element.path))
+                    self.decrypt_file(Path(element.path), destination_path)
                 else:
-                    self.decrypt_folder(Path(element.path))
+                    self.decrypt_folder(Path(element.path), destination_path)
         except NotADirectoryError as exception:
             print(exception)
 
-    def encrypt_folders(self, folders: list):
+    def encrypt_folders(self, folders: list, destination_path: Path = None):
         for folder in folders:
-            self.encrypt_folder(Path(folder))
+            self.encrypt_folder(Path(folder), destination_path)
 
-    def decrypt_folders(self, folders: list):
+    def decrypt_folders(self, folders: list, destination_path: Path = None):
         for folder in folders:
-            self.decrypt_folder(Path(folder))
+            self.decrypt_folder(Path(folder), destination_path)
 
     def encrypt_message(self, text: str) -> str:
         """
@@ -253,6 +266,11 @@ class Encrypter:
 
     def create_path(self, path):
         os.mkdir(path)
+
+    @staticmethod
+    def remove_dir_if_is_empty(path):
+        if not os.listdir(path):
+            os.rmdir(path)
 
 
 class CryptographProcess:

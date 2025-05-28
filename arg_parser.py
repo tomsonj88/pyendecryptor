@@ -38,6 +38,7 @@ parser.add_argument("-s",
                     )
 parser.add_argument("-ko",
                     "--keep_originals",
+                    action='store_true',
                     help="Remove original file/folder after "
                          "encryption/decryption"
                     )
