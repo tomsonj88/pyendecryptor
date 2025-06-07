@@ -1,7 +1,5 @@
 import argparse
 
-import crypting
-
 parser = argparse.ArgumentParser(prog="Pyendecryptor",
                                  description="Program for encrypt/decrypt "
                                              "message, file or directory"

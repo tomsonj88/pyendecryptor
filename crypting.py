@@ -1,19 +1,15 @@
 import base64
 import os
-import re
 import sys
 from abc import ABC, abstractmethod
 from pathlib import Path
 
+from arg_parser import args
 from cryptography.fernet import Fernet, InvalidToken
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from dotenv import load_dotenv
 from getpass import getpass
-
-import arg_parser
-
-#from argparse import ArgumentParser
 
 load_dotenv()
 
@@ -104,10 +100,11 @@ class Encrypter:
             encrypted_content = process.make_process(content)
             with open(new_file, "wb") as file: #ToDo: jak wbyeirasz destination_path nowa/nieistniejace to wywala bląd  FileNotFoundError
                 file.write(encrypted_content)
-            if not arg_parser.args.keep_originals:
+            if not args.keep_originals:
                 filepath.unlink()
                 self.remove_dir_if_is_empty(filepath.parent) # todo: add to more functions
-
+            if args.verbose >=1:
+                print(f"File: {filepath} has been encrypted")
         except FileNotFoundError:
             print(f"File {filepath} not found")
         except NotAFileError as exception:
@@ -147,9 +144,11 @@ class Encrypter:
             decrypted_content = process.make_process(content.decode("utf-8"))
             with open(decrypted_file, "wb") as file:
                 file.write(decrypted_content)
-            if not arg_parser.args.keep_originals:
+            if not args.keep_originals:
                 filepath.unlink()
                 self.remove_dir_if_is_empty(filepath.parent) # todo: add to more functions
+            if args.verbose >=1:
+                print(f"File: {filepath} has been decrypted")
         except FileNotFoundError:
             print(f"File {filepath} not found")
         except NotEncryptedFileError as e:
@@ -184,6 +183,8 @@ class Encrypter:
                     self.encrypt_file(Path(element.path), destination_path)
                 else:
                     self.encrypt_folder(Path(element.path), destination_path)
+            if args.verbose >=1:
+                print(f"Folder: {folder_path} has been encrypted")
         except NotADirectoryError as exception:
             print(exception)
 
@@ -198,6 +199,8 @@ class Encrypter:
                     self.decrypt_file(Path(element.path), destination_path)
                 else:
                     self.decrypt_folder(Path(element.path), destination_path)
+            if args.verbose >= 1:
+                print(f"Folder: {folder_path} has been decrypted")
         except NotADirectoryError as exception:
             print(exception)
 
@@ -232,7 +235,7 @@ class Encrypter:
     @staticmethod
     def get_password():
         password = None
-        if arg_parser.args.password:
+        if args.password:
             while not password:
                 password = getpass("Enter password")
             return password
@@ -242,7 +245,7 @@ class Encrypter:
     @staticmethod
     def get_salt():
         salt = None
-        if arg_parser.args.salt:
+        if args.salt:
             while not salt:
                 salt = getpass("Enter salt")
             return salt

@@ -28,6 +28,10 @@ folder_path = Path("for_test")
 #encrypter.encrypt_folder(folder_path)
 #encrypter.decrypt_folder(folder_path)
 
+def print_verbose(message: str):
+    if args.verbose:
+        print(message)
+
 def main():
     encrypter = Encrypter()
 
