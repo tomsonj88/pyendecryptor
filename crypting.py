@@ -75,7 +75,7 @@ class Encrypter:
         key = self._generate_key()
         return Fernet(key)
 
-    def encrypt_file(self, filepath: Path, destination_path: Path = None):
+    def encrypt_file(self, filepath: Path, destination_path: Path = None) -> bool:
         """
         Function to encrypt file
         1) open file
@@ -105,14 +105,15 @@ class Encrypter:
             if not args.keep_originals:
                 filepath.unlink()
                 self.remove_dir_if_is_empty(filepath.parent) # todo: add to more functions
-            if args.verbose == 1:
-                print(f"File: {filepath} has been encrypted")
+            return True
         except FileNotFoundError:
             print(f"File {filepath} not found")
+            return False
         except NotAFileError as exception:
             print(exception)
+            return False
 
-    def decrypt_file(self, filepath: Path, destination_path: Path = None):
+    def decrypt_file(self, filepath: Path, destination_path: Path = None) -> bool:
         """
         Function to decrypt file
         1) open file
@@ -149,42 +150,35 @@ class Encrypter:
             if not args.keep_originals:
                 filepath.unlink()
                 self.remove_dir_if_is_empty(filepath.parent) # todo: add to more functions
-            if args.verbose == 1:
-                print(f"File: {filepath} has been decrypted")
+            return True
         except FileNotFoundError:
             print(f"File {filepath} not found")
+            return False
         except NotEncryptedFileError as e:
             print(e)
+            return False
         except NotAFileError as exception:
             print(exception)
+            return False
 
     def encrypt_files(self, files: list, destination_path: Path = None):
-        # for file in tqdm(files, desc="encrypting files"):
         iterable = tqdm(files) if args.verbose >= 3 else files
         for file in iterable:
             start_time = time.time()
-            self.encrypt_file(Path(file), destination_path)
+            process_successful = self.encrypt_file(Path(file), destination_path)
             end_time = time.time()
-            # time.sleep(0.5)
-            # print("\n")
-            if args.verbose == 2:
-                print(f"\nFile: {file} has been encrypted in {round(end_time - start_time, 3)} seconds")
-            if args.verbose >= 3:
-                tqdm.write(
-                    f"File: {file} has been encrypted in {round(end_time - start_time, 3)} seconds")
+            self.print_verbose_status(file, process_successful, start_time, end_time)
 
     def decrypt_files(self, files: list, destination_path: Path = None):
         iterable = tqdm(files) if args.verbose >= 3 else files
         for file in iterable:
             start_time = time.time()
-            self.decrypt_file(Path(file), destination_path)
+            process_successful = self.decrypt_file(Path(file), destination_path)
             end_time = time.time()
-            if args.verbose == 2:
-                print(f"\nFile: {file} has been encrypted in {round(end_time - start_time, 3)} seconds")
-            if args.verbose >= 3:
-                tqdm.write(f"File: {file} has been encrypted in {round(end_time - start_time, 3)} seconds")
+            self.print_verbose_status(file, process_successful, start_time,
+                                      end_time)
 
-    def encrypt_folder(self, folder_path: Path, destination_path: Path = None): # TODO: add dest path
+    def encrypt_folder(self, folder_path: Path, destination_path: Path = None) -> bool: # TODO: add dest path
         """
         1) In for loop goes to every file in directory
         2) Check if is file or directory
@@ -203,12 +197,12 @@ class Encrypter:
                     self.encrypt_file(Path(element.path), destination_path)
                 else:
                     self.encrypt_folder(Path(element.path), destination_path)
-            if args.verbose == 1:
-                print(f"Folder: {folder_path} has been encrypted")
+            return True
         except NotADirectoryError as exception:
             print(exception)
+            return False
 
-    def decrypt_folder(self, folder_path: Path, destination_path: Path = None): # TODO: add dest path
+    def decrypt_folder(self, folder_path: Path, destination_path: Path = None) -> bool: # TODO: add dest path
         try:
             self.check_path_is_directory(folder_path)
             if destination_path:
@@ -219,34 +213,27 @@ class Encrypter:
                     self.decrypt_file(Path(element.path), destination_path)
                 else:
                     self.decrypt_folder(Path(element.path), destination_path)
-            if args.verbose == 1:
-                print(f"Folder: {folder_path} has been decrypted")
+            return True
         except NotADirectoryError as exception:
             print(exception)
+            return False
 
     def encrypt_folders(self, folders: list, destination_path: Path = None):
         iterable = tqdm(folders) if args.verbose >= 3 else folders
         for folder in iterable:
             start_time = time.time()
-            self.encrypt_folder(Path(folder), destination_path)
+            process_successful = self.encrypt_folder(Path(folder), destination_path)
             end_time = time.time()
-            if args.verbose == 2:
-                print(f"Folder: {folder} has been encrypted in {round(end_time - start_time, 3)} seconds")
-            if args.verbose >= 3:
-                tqdm.write(
-                    f"Folder: {folder} has been encrypted in {round(end_time - start_time, 3)} seconds")
+            self.print_verbose_status(folder, process_successful, start_time,
+                                      end_time)
 
     def decrypt_folders(self, folders: list, destination_path: Path = None):
         iterable = tqdm(folders) if args.verbose >= 3 else folders
         for folder in iterable:
             start_time = time.time()
-            self.decrypt_folder(Path(folder), destination_path)
+            process_successful = self.decrypt_folder(Path(folder), destination_path)
             end_time = time.time()
-            if args.verbose == 2:
-                print(f"Folder: {folder} has been decrypted in {round(end_time - start_time, 3)} seconds")
-            if args.verbose >= 3:
-                tqdm.write(
-                    f"Folder: {folder} has been decrypted in {round(end_time - start_time, 3)} seconds")
+            self.print_verbose_status(folder, process_successful, start_time, end_time)
 
     def encrypt_message(self, text: str) -> str:
         """
@@ -289,27 +276,43 @@ class Encrypter:
             return os.getenv("SALT")
 
     @staticmethod
-    def check_path_is_directory(path: Path):
+    def check_path_is_directory(path: Path) -> bool:
         if not os.path.isdir(path):
             raise NotADirectoryError(
-                "Given location is not a directory or directory doesn't exist")
+                f"Location: {path} is not a directory or directory doesn't exist")
+            return False
+        else:
+            return True
 
     @staticmethod
     def check_path_is_file(path: Path):
         if not os.path.isfile(path):
             raise NotAFileError(
-                "Given location is not a file or file doesn't exist")
+                f"Location: {path} is not a file or file doesn't exist")
 
-    def is_path_exist(self, path) -> bool:
+    @staticmethod
+    def is_path_exist(path) -> bool:
         return os.path.exists(path)
 
-    def create_path(self, path):
+    @staticmethod
+    def create_path(path):
         os.mkdir(path)
 
     @staticmethod
     def remove_dir_if_is_empty(path):
         if not os.listdir(path):
             os.rmdir(path)
+
+    @staticmethod
+    def print_verbose_status(path: Path, process_successful: bool, start_time: float, end_time: float):
+        if args.verbose == 1 and process_successful:
+            print(f"{path} has been {args.mode}ed")
+        if args.verbose == 2 and process_successful:
+            print(
+                f"{path} has been {args.mode}ed in {round(end_time - start_time, 3)} seconds")
+        if args.verbose >= 3 and process_successful:
+            tqdm.write(
+                f"{path} has been {args.mode}ed in {round(end_time - start_time, 3)} seconds")
 
 
 class CryptographProcess:
