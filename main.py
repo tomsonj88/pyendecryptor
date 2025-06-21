@@ -57,4 +57,7 @@ def main():
     # encrypter.decrypt_folder(folder_path=Path(r".\for_test\dec"),
     #                        destination_path=Path(r".\for_test\spr"))
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("Operation interrupted by user")
