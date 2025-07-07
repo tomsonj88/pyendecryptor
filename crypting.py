@@ -33,20 +33,20 @@ class NotAFileError(Exception):
 
 class Encrypt(Command):
 
-    def __init__(self, szyfrator):
-        self.szyfrator = szyfrator
+    def __init__(self, encryptor):
+        self.encryptor = encryptor
 
     def execute(self, message):
-        return self.szyfrator.encrypt(message)
+        return self.encryptor.encrypt(message)
 
 
 class Decrypt(Command):
 
-    def __init__(self, szyfrator):
-        self.szyfrator = szyfrator
+    def __init__(self, decryptor):
+        self.decryptor = decryptor
 
     def execute(self, encrypted_msg):
-        return self.szyfrator.decrypt(encrypted_msg)
+        return self.decryptor.decrypt(encrypted_msg)
 
 
 class Encrypter:
